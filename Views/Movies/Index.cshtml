@@ -1,0 +1,214 @@
+<style>
+    .rating-0
+    {
+        width: 0%;
+    }
+    .rating-1
+    {
+        width: 20%;
+    }
+    .rating-2
+    {
+        width: 40%;
+    }
+    .rating-3
+    {
+        width: 60%;
+    }
+    .rating-4
+    {
+        width: 80%;
+    }
+    .rating-5
+    {
+        width: 100%;
+    }
+</style>
+
+<div class="container-fluid" ng-app="MovieListApp">
+
+    <div class="container-fluid" ng-controller="MovieListController">
+        <div class="row">
+            <h1>Movies</h1>
+            <div class="col col-md-12">
+                <div class="form-group">
+                    <input type="search" class="form-control" data-ng-model="Query" placeholder="Search Movies" ng-change="FindMovies(Query)"/>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table theme-default">
+                        <tbody class="list-items">
+                            <tr class="list-items-row" ng-repeat="movie in Movies" data-toggle="collapse" data-target="#">
+                                <td ng-click="SelectMovie(movie)" ng-bind="movie.title"></td>
+                                <td><i class="glyph glyph-chevron-right"></i></td>
+                            </tr>
+                        </tbody>
+                </table>
+                </div>
+
+            </div>
+            <div class="col col-md-12">
+                <section id="selected-movie" ng-if="SelectedMovie != null">
+                    <h2 ng-bind="SelectedMovie.title"> </h2>
+                    
+
+                    <div class="rating">
+                        <div class="rating-stars">
+                            <!-- Background stars -->
+                            <ul class="rating-stars-background">
+                                <!-- Line-breaks are intentional to prevent extra spacing caused by "display: inline-block" -->
+                                <li><i class="glyph glyph-star"></i></li><li>
+                                <i class="glyph glyph-star"></i></li><li>
+                                <i class="glyph glyph-star"></i></li><li>
+                                <i class="glyph glyph-star"></i></li><li>
+                                <i class="glyph glyph-star"></i></li>
+                            </ul>
+                    
+                            <!-- Set the rating percentage as an inline style -->
+                            <ul class="rating-stars-value" ng-class="'rating-' + SelectedMovie.rating">
+                                <li><i class="glyph glyph-star"></i></li><li>
+                                <i class="glyph glyph-star"></i></li><li>
+                                <i class="glyph glyph-star"></i></li><li>
+                                <i class="glyph glyph-star"></i></li><li>
+                                <i class="glyph glyph-star"></i></li>
+                            </ul>
+                    
+                            <div class="rating-stars-input">
+                                <button class="rating-btn" title="1" ng-click="SetSelectedRating(1)"><i class="glyph glyph-star"></i></button><button class="rating-btn" title="2" ng-click="SetSelectedRating(2)">
+                                <i class="glyph glyph-star"></i></button><button class="rating-btn" title="3" ng-click="SetSelectedRating(3)">
+                                <i class="glyph glyph-star"></i></button><button class="rating-btn" title="4" ng-click="SetSelectedRating(4)">
+                                <i class="glyph glyph-star"></i></button><button class="rating-btn" title="5" ng-click="SetSelectedRating(5)">
+                                <i class="glyph glyph-star"></i></button>
+                            </div>
+                        </div>
+                        <br>
+                         <a class="btn btn-primary" 
+                         ng-click="RateMovie(SelectedMovie.movieId, SelectedMovie.rating)"
+                         ng-disabled="RateDisabled" 
+                         ng-class="{'disabled': RateDisabled}"> Rate <i class="glyph glyph-chevron-right"> </i></a>
+                         <a ng-click="FindSimilarMovies(SelectedMovie.movieId)" class="btn btn-default"
+                            ng-disabled="SimilarDisabled" ng-class="{'disabled': SimilarDisabled}">Similar</a>
+                        
+                    </div>
+                    <br>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <img class="img-responsive" ng-src="{{'https://image.tmdb.org/t/p/w500' + SelectedMovie.poster_path}}" width="200" />
+                        </div>
+                        <div class="col-md-12">
+                            <p ng-bind="SelectedMovie.overview"> </p>
+                        </div>
+                    </div>
+                    
+                    
+                </section>
+            </div>
+
+        </div>        
+    </div>
+</div>
+
+<script src="/lib/angular/angular.js"> </script>
+<script>
+    var app = angular.module('MovieListApp', []);
+    app.controller('MovieListController', ['$scope', '$http', function ($scope, $http) {
+        $scope.Movies = null;
+        $scope.SelectedMovie = null;
+        $scope.SimilarDisabled = false;
+        $scope.UserRatings = null;
+
+        $scope.LoadUserRatings = function () 
+        {
+            $http.get('/movies/getallratings')
+            .then(function success(response)
+            {
+                $scope.UserRatings = response.data;   
+            },
+            function failure (response)
+            {
+                // empty
+            });
+        }
+
+        $scope.LoadUserRatings();
+        
+        $scope.FindMovies = function(query)
+        {
+            var OnSuccess = function (response)
+            {
+                $scope.Movies = response.data;
+            }
+
+            var OnFailure = function (response)
+            {
+                console.log(response);
+            }
+            $http.get('/movies/find?q=' + encodeURIComponent(query))
+            .then(OnSuccess, OnFailure);
+        }
+
+        $scope.FindMovies('');
+
+        $scope.SelectMovie = function (movie)
+        {              
+            $scope.SelectedMovie = movie;
+            $scope.SelectedMovie.rating = 0;
+            for (var i=0; i<$scope.UserRatings.length; i++)
+            {
+                if ($scope.UserRatings[i].movieId == $scope.SelectedMovie.movieId)
+                {
+                    $scope.SelectedMovie.rating = $scope.UserRatings[i].rating;
+                    break;
+                }
+            }
+            
+        }
+
+        $scope.FindSimilarMovies = function (movieId)
+        {
+            $scope.SimilarDisabled = true;
+            var OnSuccess = function (response)
+            {
+                $scope.Movies = response.data;
+                $scope.SimilarDisabled = false;
+            }
+
+            var OnFailure = function (response)
+            {
+                console.log(response);
+                $scope.SimilarDisabled = false;
+            }
+            $http.get('/movies/similar?id=' + encodeURIComponent(movieId))
+            .then(OnSuccess, OnFailure);
+        }
+
+        $scope.SetSelectedRating = function (rating)
+        {
+            $scope.SelectedMovie.rating = rating;
+        }
+
+        $scope.RateMovie = function (movieId, rating)
+        {
+            $scope.RateDisabled = true;
+            var OnSuccess = function (response)
+            {
+                console.log(response);
+                $scope.RateDisabled = false;
+            }
+
+            var OnFailure = function (response)
+            {
+                console.log(response);
+                $scope.RateDisabled = false;
+            }
+            var data = 'movieId='+encodeURIComponent(movieId) + '&rating=' + rating;
+            
+            $http.post('/movies/rate', data, {headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
+            .then(OnSuccess, OnFailure);
+
+            $scope.LoadUserRatings();
+        }
+
+    }])
+</script>

@@ -1,0 +1,19 @@
+@model RegisterViewModel
+
+<h1>Register</h1>
+@if (ViewData["Error"]!=null)
+{
+    <b>@{@ViewData["Error"]}</b>
+}
+<form asp-controller="Account" asp-action="Register">
+    <div class="form-group">
+        <label asp-for="UserName">@Html.DisplayNameFor(m => m.UserName)</label>
+        <input asp-for="UserName" class="form-control"/>
+    </div> <br>
+    <div class="form-group">
+        <label asp-for="Password">@Html.DisplayNameFor(m => m.Password)</label>
+        <input asp-for="Password" class="form-control"/>
+    </div> <br>
+
+    <input type="submit" value="Register" class="btn btn-default"/>
+</form>

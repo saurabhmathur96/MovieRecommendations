@@ -1,0 +1,96 @@
+<style>
+    #ratings 
+    {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+</style>
+
+<div class="container-fluid" ng-app="MovieRecommendationApp">
+
+    <div class="container-fluid" ng-controller="MovieRecommendationController">
+        <h1>Recommendations</h1>
+        <div class="row">
+            <div class="col col-md-12" id="ratings">
+                <div class="table-responsive">
+                    <table class="table theme-default">
+                        <tbody class="list-items">
+                            <tr class="list-items-row" ng-repeat="movie in Movies|orderBy:title" data-toggle="collapse" data-target="#">
+                                <td ng-click="SelectMovie(movie)" ng-bind="movie.title"></td>
+                                <td>
+                                    <div class="rating rating-small">
+                                        <div class="rating-stars">
+                                            <!-- Background stars -->
+                                            <ul class="rating-stars-background">
+                                                <!-- Line-breaks are intentional to prevent extra spacing caused by "display: inline-block" -->
+                                                <li><i class="glyph glyph-star"></i></li><li>
+                                                <i class="glyph glyph-star"></i></li><li>
+                                                <i class="glyph glyph-star"></i></li><li>
+                                                <i class="glyph glyph-star"></i></li><li>
+                                                <i class="glyph glyph-star"></i></li>
+                                            </ul>
+                                    
+                                            <!-- Set the rating percentage as an inline style -->
+                                            <ul class="rating-stars-value" ng-style="{'width': movie.rating * 18.0 + '%'}">
+                                                <li><i class="glyph glyph-star"></i></li><li>
+                                                <i class="glyph glyph-star"></i></li><li>
+                                                <i class="glyph glyph-star"></i></li><li>
+                                                <i class="glyph glyph-star"></i></li><li>
+                                                <i class="glyph glyph-star"></i></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col col-md-12">
+            <section id="selected-movie" ng-if="SelectedMovie != null">
+                <h2 ng-bind="SelectedMovie.title"> </h2>
+                <div class="row">
+                    <div class="col-md-12">
+                        <img class="img-responsive" ng-src="{{'https://image.tmdb.org/t/p/w500' + SelectedMovie.poster_path}}" width="200" />
+                    </div>
+                    <div class="col-md-12">
+                        <p ng-bind="SelectedMovie.overview"> </p>
+                    </div>
+                 </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script src="/lib/angular/angular.js"> </script>
+<script>
+    var app = angular.module('MovieRecommendationApp', []);
+    app.controller('MovieRecommendationController', ['$scope', '$http', function ($scope, $http) 
+    {
+        $scope.Movies = [];
+        $scope.Query = '';
+        $scope.SelectedMovie = null;
+
+        $http.get('/movies/getrecommendations')
+        .then(function success(response)
+        {
+            $scope.Movies = response.data;
+            console.log(response);   
+        },
+        function failure (response)
+        {
+        console.log(response);   
+            // empty
+        });
+
+        $scope.SelectMovie = function(movie)
+        {
+            $scope.SelectedMovie = movie;
+        }
+
+
+
+
+    }]);
+</script>

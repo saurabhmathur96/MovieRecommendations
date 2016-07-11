@@ -1,0 +1,12 @@
+@using Microsoft.AspNetCore.Http
+@inject UserManager<ApplicationUser> UserManager
+
+
+<div class="container">
+    <h1> Welcome, @UserManager.GetUserName(User)</h1>
+    <ul>
+        <li><a asp-controller="Movies" asp-action="Index">Rate Movies</a></li>
+        <li><a asp-controller="Movies" asp-action="Recommendations">Get Movie Recommendations</a></li>
+        <li><a asp-controller="Account" asp-action="LogOff">LogOff</a></li>
+    </ul>
+</div>

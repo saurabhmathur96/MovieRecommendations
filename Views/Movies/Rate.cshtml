@@ -1,0 +1,28 @@
+@using Microsoft.AspNetCore.Http
+@inject UserManager<ApplicationUser> UserManager
+@model RateViewModel
+
+
+
+<h1>Rate</h1>
+
+@if (ViewData["Error"]!=null)
+{
+    <b>@{@ViewData["Error"]}</b>
+}
+
+
+
+hello, <b>@UserManager.GetUserName(User)</b>
+<form asp-controller="Movies" asp-action="Rate">
+    <label>
+        <span>@Html.DisplayNameFor(m => m.MovieId)</span>
+        <input asp-for="MovieId" />
+    </label> <br>
+    <label>
+        <span>@Html.DisplayNameFor(m => m.Rating)</span>
+        <input asp-for="Rating" />
+    </label> <br>
+
+    <input type="submit" value="Rate"/>
+</form>
